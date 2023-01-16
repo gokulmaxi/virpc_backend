@@ -41,12 +41,12 @@ func signin(c *fiber.Ctx) error {
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			// This error means your query did not match any documents.
-			return c.SendString("un auth")
+			return c.SendString("No user found")
 		}
 		panic(err)
 	}
 	if results.User_role == userModel.UserTypeAdmin {
-		if req["password"] != results.Data.(userModel.AdminModel).Password {
+		if req["password"] != results.Data.(userModel.AdminUser).Password {
 			return c.SendString("password is wrong")
 		}
 	}
@@ -56,7 +56,7 @@ func signin(c *fiber.Ctx) error {
 	if err := sess.Save(); err != nil {
 		panic(err)
 	}
-	return c.SendString("logged in")
+	return c.SendString("success")
 }
 func signout(c *fiber.Ctx) error {
 	sess, err := utilities.Store.Get(c)
