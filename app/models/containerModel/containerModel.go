@@ -1,6 +1,6 @@
-package imageModel
+package containerModel
 
-type ImageModel struct {
+type containerModel struct {
 	ImageName        string `bson:"imagename"`
 	BaseImage        string
 	ImageVersion     string

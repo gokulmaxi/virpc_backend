@@ -15,37 +15,12 @@ import (
 
 var api *fiber.App
 
-// func websocketHandler(c *fiber.Ctx) {
-// 	ws, err := upgrader.Upgrade(c.Fasthttp, c.Request(), c.Response())
-// 	if err != nil {
-// 		log.Println(err)
-// 		return
-// 	}
-
-// 	ticker := time.NewTicker(5 * time.Second)
-// 	defer ticker.Stop()
-
-// 	for {
-// 		select {
-// 		case <-ticker.C:
-// 			stats, err := container.Stats(context.Background(), containerID)
-// 			if err != nil {
-// 				log.Println(err)
-// 				break
-// 			}
-// 			if err := ws.WriteJSON(stats); err != nil {
-// 				log.Println(err)
-// 				break
-// 			}
-// 		}
-// 	}
-// }
 func UseRoute(app *fiber.App) {
 
 	api = app
-	user_handler := app.Group("/user")
+	user_handler := app.Group("/api/user")
 	userHandler.Register(user_handler)
-	image_handler := app.Group("/image")
+	image_handler := app.Group("/api/image")
 	imageHandler.Register(image_handler)
 	dashboard_handler := app.Group("/dashboard")
 	dashboardhandler.Register(dashboard_handler)

@@ -24,9 +24,9 @@ func insertImage(c *fiber.Ctx) error {
 	coll := database.Instance.Db.Collection("images")
 	_, err = coll.InsertOne(context.TODO(), image)
 	if err != nil {
-		panic(err)
+		return c.SendString("failed")
 	}
-	return c.SendString("added image")
+	return c.SendString("Done")
 }
 func list(c *fiber.Ctx) error {
 	coll := database.Instance.Db.Collection("images")
@@ -34,9 +34,9 @@ func list(c *fiber.Ctx) error {
 	groupStage := bson.D{
 		{"$group", bson.D{
 			{"_id", "$imagename"},
-			{"tags",
+			{"versions",
 				bson.D{
-					{"$addToSet", "$imagetag"},
+					{"$addToSet", "$imageversion"},
 				},
 			},
 		}}}
