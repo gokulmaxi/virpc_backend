@@ -9,23 +9,25 @@ import (
 )
 
 const (
-	UserTypeAdmin   = "admin"
-	UserTypeStudent = "user"
-	UserTypeFaculty = "faculty"
+	UserTypeAdmin  = "admin"
+	UserTypeNormal = "user"
 )
 
 type UserModel struct {
-	Name      string `bson:"name"`
-	Email     string `bson:"email"`
-	User_role string `bson:"user_type"`
-	Data      interface{}
+	Name                string `bson:"name"`
+	Email               string `bson:"email"`
+	User_role           string `bson:"user_type"`
+	Account_deactivated bool
+	Data                interface{}
 }
 
 type AdminUser struct {
 	Password string `bson:"password"`
 }
 type NormalUser struct {
-	Batch string `bson:"batch"`
+	Batch    string `bson:"batch"`
+	ImageUrl string `bson:"imageurl"`
+	PhoneNo  string `bson:"phoneno"`
 }
 
 func (user *UserModel) UnmarshalJSON(data []byte) (err error) {
@@ -46,9 +48,9 @@ func (user *UserModel) UnmarshalJSON(data []byte) (err error) {
 		user.Data = &AdminUser{
 			Password: dev["password"].(string),
 		}
-	case UserTypeStudent:
-		fmt.Println("student")
-		user.User_role = "student"
+	case UserTypeNormal:
+		fmt.Println("user")
+		user.User_role = "user"
 		user.Data = NormalUser{
 			Batch: dev["batch"].(string),
 		}
@@ -72,11 +74,13 @@ func (user *UserModel) UnmarshalBSON(data []byte) (err error) {
 		user.Data = AdminUser{
 			Password: subdoc["password"].(string),
 		}
-	case UserTypeStudent:
-		fmt.Println("student")
-		user.User_role = "student"
+	case UserTypeNormal:
+		fmt.Println("user")
+		user.User_role = "user"
 		user.Data = NormalUser{
-			Batch: subdoc["batch"].(string),
+			Batch:    subdoc["batch"].(string),
+			ImageUrl: subdoc["imageurl"].(string),
+			PhoneNo:  subdoc["phoneno"].(string),
 		}
 	}
 	return nil

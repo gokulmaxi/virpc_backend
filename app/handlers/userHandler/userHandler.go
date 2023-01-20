@@ -27,6 +27,7 @@ func signin(c *fiber.Ctx) error {
 	// create new session
 	var results userModel.UserModel
 	var req map[string]interface{}
+	res := make(map[string]interface{})
 	sess, err := utilities.Store.Get(c)
 	if err != nil {
 		panic(err)
@@ -38,25 +39,44 @@ func signin(c *fiber.Ctx) error {
 	filter := bson.D{{"email", req["user"].(string)}}
 	coll := database.Instance.Db.Collection("users")
 	err = coll.FindOne(context.TODO(), filter).Decode(&results)
+
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			// This error means your query did not match any documents.
-			return c.SendString("No user found")
+			res["data"] = "User Not found"
+			data, _ := json.Marshal(res)
+			return c.Send(data)
 		}
-		panic(err)
 	}
 	if results.User_role == userModel.UserTypeAdmin {
 		if req["password"] != results.Data.(userModel.AdminUser).Password {
-			return c.SendString("password is wrong")
+			res["data"] = "password is incorrect"
+		} else {
+			res["name"] = results.Name
+			res["role"] = results.User_role
+			res["is_deactivated"] = results.Account_deactivated
 		}
+	} else {
+		fmt.Println(results.Data)
+		if results.Data.(userModel.NormalUser).ImageUrl == "" {
+			res["registered"] = false
+		} else {
+			res["registered"] = true
+		}
+		res["name"] = results.Name
+		res["role"] = results.User_role
+		res["is_deactivated"] = results.Account_deactivated
+
 	}
+	// res["account_deactivated"] = results.Account_deactivated
 	fmt.Printf("%+v\n", results)
 	sess.Set("name", results.Name)
 	sess.Set("role", results.User_role)
 	if err := sess.Save(); err != nil {
 		panic(err)
 	}
-	return c.SendString("success")
+	data, err := json.Marshal(res)
+	return c.Send(data)
 }
 func signout(c *fiber.Ctx) error {
 	sess, err := utilities.Store.Get(c)
