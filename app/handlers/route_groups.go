@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	dashboardhandler "app/handlers/dashboardHandler"
+	"app/handlers/containerHandler"
+	"app/handlers/dashboardHandler"
 	"app/handlers/imageHandler"
 	"app/handlers/userHandler"
 	"app/middlewares/auth"
@@ -24,6 +25,8 @@ func UseRoute(app *fiber.App) {
 	imageHandler.Register(image_handler)
 	dashboard_handler := app.Group("/dashboard")
 	dashboardhandler.Register(dashboard_handler)
+	container_handler := app.Group("/api/container")
+	containerHandler.Register(container_handler)
 	api.Get("/test", auth.Auth, func(c *fiber.Ctx) error { return c.SendString("hello") })
 	api.Get("/testadmin", auth.AdminAuth, func(c *fiber.Ctx) error { return c.SendString("hello") })
 	api.Get("/teststudent", auth.Auth, func(c *fiber.Ctx) error { return c.SendString("hello") })

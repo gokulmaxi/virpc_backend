@@ -1,12 +1,17 @@
 package containerModel
 
-type containerModel struct {
-	ImageName        string `bson:"imagename"`
-	BaseImage        string
-	ImageVersion     string
-	ImagePull        string
-	ImageDescription string
-	RequireGpu       bool
+import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+type ContainerRequestModel struct {
+	ImageId          primitive.ObjectID `bson:"imageId"`
+	BatchName        string
+	BatchDescription string
+	StartDate        string
+	EndDate          string
+	CpuLimit         int
+	Add_features     []string
 }
 
 // {

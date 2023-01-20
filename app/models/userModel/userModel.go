@@ -50,7 +50,7 @@ func (user *UserModel) UnmarshalJSON(data []byte) (err error) {
 		fmt.Println("student")
 		user.User_role = "student"
 		user.Data = NormalUser{
-			Batch: dev["roll_number"].(string),
+			Batch: dev["batch"].(string),
 		}
 	}
 	return nil
