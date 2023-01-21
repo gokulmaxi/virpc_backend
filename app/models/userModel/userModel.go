@@ -14,9 +14,10 @@ const (
 )
 
 type UserModel struct {
-	Name                string `bson:"name"`
-	Email               string `bson:"email"`
-	User_role           string `bson:"user_type"`
+	User_id             primitive.ObjectID `bson:"_id,omitempty"`
+	Name                string             `bson:"name"`
+	Email               string             `bson:"email"`
+	User_role           string             `bson:"user_type"`
 	Account_deactivated bool
 	Data                interface{}
 }
@@ -42,6 +43,8 @@ func (user *UserModel) UnmarshalJSON(data []byte) (err error) {
 	}
 	user.Name = dev["name"].(string)
 	user.Email = dev["email"].(string)
+	// user.User_id = dev["_id"].(primitive.ObjectID)
+	fmt.Println(user.User_id)
 	switch discriminator {
 	case UserTypeAdmin:
 		user.User_role = "admin"
@@ -66,6 +69,7 @@ func (user *UserModel) UnmarshalBSON(data []byte) (err error) {
 	}
 	user.Name = doc["name"].(string)
 	user.Email = doc["email"].(string)
+	user.User_id = doc["_id"].(primitive.ObjectID)
 	subdoc = doc["data"].(primitive.M)
 	switch doc["user_type"] {
 	case UserTypeAdmin:
