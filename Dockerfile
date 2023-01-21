@@ -7,6 +7,7 @@ RUN apt-get update \
 WORKDIR /app
 ENV GOPATH=/
 COPY ./app/go.mod .
+#
 RUN go install github.com/cosmtrek/air@latest
 # RUN go get
 
