@@ -100,7 +100,7 @@ func updateAcc(c *fiber.Ctx) error {
 	coll := database.Instance.Db.Collection("users")
 	id, _ := primitive.ObjectIDFromHex(req["userid"].(string))
 	filter := bson.D{{"_id", id}}
-	update := bson.D{{"$set", bson.D{{"data.imageurl", req["picture"]}, {"data.phoneno", req["mobile"]}}}}
+	update := bson.D{{"$set", bson.D{{"data.imageurl", req["picture"]}, {"data.phoneno", req["mobile"].(string)}}}}
 	_, err = coll.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		res["message"] = "failed"
