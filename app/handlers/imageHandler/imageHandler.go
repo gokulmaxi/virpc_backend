@@ -14,6 +14,7 @@ import (
 
 func insertImage(c *fiber.Ctx) error {
 	var image = imageModel.ImageModel{}
+	res := make(map[string]interface{})
 	req := c.Body()
 	err := json.Unmarshal(req, &image)
 	if err != nil {
@@ -24,9 +25,13 @@ func insertImage(c *fiber.Ctx) error {
 	coll := database.Instance.Db.Collection("images")
 	_, err = coll.InsertOne(context.TODO(), image)
 	if err != nil {
-		return c.SendString("failed")
+		res["message"] = "internal_error"
+		data, _ := json.Marshal(res)
+		return c.Send(data)
 	}
-	return c.SendString("Done")
+	res["message"] = "done"
+	data, _ := json.Marshal(res)
+	return c.Send(data)
 }
 func list(c *fiber.Ctx) error {
 	coll := database.Instance.Db.Collection("images")
