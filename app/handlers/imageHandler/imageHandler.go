@@ -35,17 +35,28 @@ func insertImage(c *fiber.Ctx) error {
 }
 func list(c *fiber.Ctx) error {
 	coll := database.Instance.Db.Collection("images")
-	matchStage := bson.D{{"$match", bson.D{}}}
-	groupStage := bson.D{
-		{"$group", bson.D{
-			{"_id", "$imagename"},
-			{"versions",
-				bson.D{
-					{"$addToSet", "$imageversion"},
-				},
-			},
+	subProjectStage := bson.D{
+		{"$project", bson.D{
+			{"name", 1},
+		}},
+	}
+	lookupStage := bson.D{
+		{"$lookup", bson.D{
+			{"from", "users"},
+			{"pipeline", bson.A{subProjectStage}},
+			{"localField", "adminId"},
+			{"foreignField", "_id"},
+			{"as", "adminUser"},
 		}}}
-	cursor, err := coll.Aggregate(context.TODO(), mongo.Pipeline{matchStage, groupStage})
+	unWindStage := bson.D{
+		{"$unwind", "$adminUser"},
+	}
+	projectStage := bson.D{{
+		"$project", bson.D{
+			{"adminId", 0},
+		},
+	}}
+	cursor, err := coll.Aggregate(context.TODO(), mongo.Pipeline{lookupStage, unWindStage, projectStage})
 	if err != nil {
 		return err
 	}

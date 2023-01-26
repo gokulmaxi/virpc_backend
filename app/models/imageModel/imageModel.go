@@ -1,5 +1,7 @@
 package imageModel
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type ImageModel struct {
 	ImageName        string `bson:"imagename"`
 	BaseImage        string
@@ -7,6 +9,8 @@ type ImageModel struct {
 	ImagePull        string
 	ImageDescription string
 	RequireGpu       bool
+	AdminId          primitive.ObjectID `bson:"adminId"`
+	isDeactivated    bool
 }
 
 // {

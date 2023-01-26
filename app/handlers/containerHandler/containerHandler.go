@@ -32,7 +32,7 @@ func list(c *fiber.Ctx) error {
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			// This error means your query did not match any documents.
-			return c.SendString("No user found")
+			return c.SendString("No containers found")
 		}
 		panic(err)
 	}
