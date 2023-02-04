@@ -1,0 +1,224 @@
+#+title: Api
+* user management
+** DONE /api/user/login
+*** Input :
+{
+  username:"admin@gmail.com",
+  password:"hello@123",
+}
+*** Output:
+**** Success
+{
+	"acc_status": true,
+	"message": "success",
+	"name": "dsfsd",
+	"role": "admin",
+	"userid": "63cb816929c2e2d1588dc345"
+}
+**** Failure
+{
+  message:"invalid"
+}
+** DONE /api/user/login
+*** Input :
+{
+  email:"admin@gmail.com",
+}
+*** Output:
+**** Success
+{
+	"acc_status": true,
+	"activated": false,
+	"message": "success",
+	"name": "kishore",
+	"role": "user",
+	"user_id": "63cac315751e64efa1ba2b82"
+}
+**** Failure
+{
+  message:"blocked",
+}
+**** Failure :x: :
+{
+  message:"unkown",
+}
+** DONE /api/user/activation
+*** Input :
+{
+	"userid": "63cc032983dc8bd285ea85f6",
+	  "picture":"https:///dfgsfsdfsdfsdfsd",
+	  "mobile":"9562513517"
+}
+*** Output:
+**** Success
+{
+	"message": "success",
+	"userid": "63cc032983dc8bd285ea85f6"
+}
+**** Failure
+{
+  message:"internal_error",
+}
+* Admin management
+** DONE /api/admin/create
+*** Input
+{
+	"name": "dsfsd",
+	"email": "asdfsdle02@hotmail.com",
+	"user_type": "admin",
+	"password": "Makeda"
+}
+*** Output
+**** Success
+{
+message : "success",
+	}
+**** Failure
+{
+  message:"internal_error",
+}
+* image creation
+** DONE /api/admin/image/create
+*** Input :
+{
+	"imagename": "python",
+	"baseimage": "python",
+	"imageversion": "1.0.0",
+	"imagepull": "python:buster",
+	"imagedescription": "ubuntu image",
+	"requiregpu": false,
+	"adminid": "63ca8a9a417a12a181df1abc"
+}
+***  Output:
+**** Success
+{
+  message : "done",
+ }
+**** Failure  :
+{
+  message:"internal_error",
+}
+** DONE /api/image/list
+*** Input
+*** Output
+[
+	{
+		"_id": "63da047393c6c8d13a4388b5",
+		"adminUser": {
+			"_id": "63cb816929c2e2d1588dc345",
+			"name": "dsfsd"
+		},
+		"baseimage": "python",
+		"imagedescription": "ubuntu image",
+		"imagename": "python",
+		"imagestatus": "active",
+		"imageversion": "1.0.0",
+		"requiregpu": false
+	}
+]
+* container management
+** TODO /api/container/create
+*** Input
+**** New Batch
+{
+	"batch": {
+		"batchname": "linux training - II",
+		"batchdescription": "this is new batch for linux training one",
+		"startdate": "02/05/2020",
+		"enddate": "02/05/2020",
+		"totaldays": 55
+      "imageid": "63ce91e4d38d3dd02142dd1f",
+      "cpulimit": 5,
+      "addfeatures": [
+          "internet_access",
+          "root_access",
+          "gpu_support"
+      ],
+	},
+	"userdetails": {
+		"email": "kishore.ct19@bits",
+		"name": "Kishhh",
+	},
+	"containerpassword": "asdasd"
+	"adminid": "63cabfc368bfee674fe60aa2"
+}
+**** Existing Batch
+{
+	"batchId": "12331234"
+	"userdetails": {
+		"email": "kishore.ct19@bits",
+		"name": "Kishhh",
+	},
+	"containerpassword": "asdasd"
+	"adminid": "63cabfc368bfee674fe60aa2"
+}
+*** Output
+**** Success
+{
+	"message": "success"
+}
+**** Failure
+{
+  message:"internal_error",
+}
+** TODO /api/container/image
+*** Output
+**** Success
+[
+	{
+	"_id" : "#dsdfsdfsdfs2312",
+	“Imagename” : “ubuntudesktop”,
+	},
+	{
+	"_id" : "#dsdfsdfsdfs2312",
+	“Imagename” : “kali linux ”,
+	}
+]
+**** Failure
+{
+  message:"internal_error",
+	}
+
+** TODO /api/container/list
+*** Output
+[
+	{
+		"_id": "63d3a766650e056ed7c27a3a",
+		"User": {
+			"_id": "63cabfc368bfee674fe60aa2",
+			"name": "Joesd"
+		},
+		"batch":{
+        "_id": 123123123123
+        "batchname":"linux training - I"
+        "startdate": "11/11/22"
+        },
+		"image": {
+			"_id": "63ce91e4d38d3dd02142dd1f",
+			"imagename": "python"
+		},
+		"containerStatus": "active"
+		"containerName": "foxy"
+	}
+]
+
+* batch management
+** TODO /api/batch/container/list
+*** Output
+[
+	{
+	"_id" : "#dsdfsdfsdfs2312",
+	"batchname" : "linux desktop - IIf",
+	"batchdescription":"this is new batch for linux training one",
+	"Image":
+{
+“_id":63ce91e4d38d3dd02142dd1f",
+“Imagename” : “ubuntudesktop”,
+}
+	"startdate":"02/05/2020",
+	"enddate":"02/05/2020",
+	"totaldays":55,
+	"Cpulimit":5,
+	"add_features": ["internet_access", "root_access", "gpu_support"],
+	}
+]

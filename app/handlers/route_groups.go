@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	adminhandler "app/handlers/adminHandler"
 	"app/handlers/containerHandler"
 	"app/handlers/dashboardHandler"
 	"app/handlers/imageHandler"
@@ -10,6 +11,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/docker/docker/api/types"
 	"github.com/gofiber/fiber/v2"
 )
@@ -27,6 +29,8 @@ func UseRoute(app *fiber.App) {
 	dashboardhandler.Register(dashboard_handler)
 	container_handler := app.Group("/api/container")
 	containerHandler.Register(container_handler)
+	admin_handler := app.Group("/api/admin")
+	adminhandler.Register(admin_handler)
 	api.Get("/test", auth.Auth, func(c *fiber.Ctx) error { return c.SendString("hello") })
 	api.Get("/testadmin", auth.AdminAuth, func(c *fiber.Ctx) error { return c.SendString("hello") })
 	api.Get("/teststudent", auth.Auth, func(c *fiber.Ctx) error { return c.SendString("hello") })

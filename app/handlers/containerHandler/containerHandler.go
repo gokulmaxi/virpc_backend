@@ -19,6 +19,9 @@ func insertContainer(c *fiber.Ctx) error {
 	if err != nil {
 		panic(err)
 	}
+	// TODO create new user if not exist
+	// TODO create new batch if not exist
+	// TODO add container id while creating new containers
 	coll := database.Instance.Db.Collection("containers")
 	_, err = coll.InsertOne(context.TODO(), container)
 	if err != nil {

@@ -10,7 +10,7 @@ type ImageModel struct {
 	ImageDescription string
 	RequireGpu       bool
 	AdminId          primitive.ObjectID `bson:"adminId"`
-	isDeactivated    bool
+	ImageStatus      string
 }
 
 // {

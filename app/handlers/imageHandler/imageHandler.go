@@ -3,35 +3,33 @@ package imageHandler
 import (
 	"app/database"
 	"app/models/imageModel"
+	"app/utilities"
 	"context"
 	"encoding/json"
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+const (
+	active   = "active"
+	deactive = "deactive"
+)
+
 func insertImage(c *fiber.Ctx) error {
 	var image = imageModel.ImageModel{}
-	res := make(map[string]interface{})
 	req := c.Body()
 	err := json.Unmarshal(req, &image)
 	if err != nil {
-		panic(err)
+		return c.Send(utilities.MsgJson(utilities.Failure))
 	}
-	fmt.Println(image)
-	fmt.Println(image)
+	image.ImageStatus = active
 	coll := database.Instance.Db.Collection("images")
 	_, err = coll.InsertOne(context.TODO(), image)
 	if err != nil {
-		res["message"] = "internal_error"
-		data, _ := json.Marshal(res)
-		return c.Send(data)
+		return c.Send(utilities.MsgJson(utilities.Failure))
 	}
-	res["message"] = "done"
-	data, _ := json.Marshal(res)
-	return c.Send(data)
+	return c.Send(utilities.MsgJson(utilities.Success))
 }
 func list(c *fiber.Ctx) error {
 	coll := database.Instance.Db.Collection("images")
@@ -54,18 +52,21 @@ func list(c *fiber.Ctx) error {
 	projectStage := bson.D{{
 		"$project", bson.D{
 			{"adminId", 0},
+			{"imagepull", 0},
 		},
 	}}
 	cursor, err := coll.Aggregate(context.TODO(), mongo.Pipeline{lookupStage, unWindStage, projectStage})
 	if err != nil {
-		return err
+		return c.Send(utilities.MsgJson(utilities.Failure))
 	}
 	var data []bson.M
 	if err = cursor.All(context.TODO(), &data); err != nil {
-		panic(err)
+		return c.Send(utilities.MsgJson(utilities.Failure))
 	}
-	fmt.Println(data)
 	jsondata, err := json.Marshal(data)
+	if data == nil {
+		return c.Send(utilities.MsgJson(utilities.NoData))
+	}
 	return c.Send(jsondata)
 }
 func Register(_route fiber.Router) {
