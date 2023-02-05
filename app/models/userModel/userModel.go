@@ -26,7 +26,6 @@ type AdminUser struct {
 	Password string `bson:"password"`
 }
 type NormalUser struct {
-	Batch    string `bson:"batch"`
 	ImageUrl string `bson:"imageurl"`
 	PhoneNo  string `bson:"phoneno"`
 }
@@ -54,9 +53,7 @@ func (user *UserModel) UnmarshalJSON(data []byte) (err error) {
 	case UserTypeNormal:
 		fmt.Println("user")
 		user.User_role = "user"
-		user.Data = NormalUser{
-			Batch: dev["batch"].(string),
-		}
+		user.Data = NormalUser{}
 	}
 	return nil
 }
@@ -82,7 +79,6 @@ func (user *UserModel) UnmarshalBSON(data []byte) (err error) {
 		fmt.Println("user")
 		user.User_role = "user"
 		user.Data = NormalUser{
-			Batch:    subdoc["batch"].(string),
 			ImageUrl: subdoc["imageurl"].(string),
 			PhoneNo:  subdoc["phoneno"].(string),
 		}

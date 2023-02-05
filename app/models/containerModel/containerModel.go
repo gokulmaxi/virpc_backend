@@ -10,16 +10,10 @@ type UserDetails struct {
 	ContainerPassword string
 }
 type ContainerRequestModel struct {
-	ImageId          primitive.ObjectID `bson:"imageId"`
-	BatchName        string
-	BatchDescription string
-	StartDate        string
-	EndDate          string
-	CpuLimit         int
-	Totaldays        int
-	Add_features     []string
-	UserDetails      UserDetails
-	AdminId          primitive.ObjectID
+	UserId            primitive.ObjectID
+	BatchId           primitive.ObjectID
+	ContainerPassword string
+	ContainerID       string
 }
 
 // {

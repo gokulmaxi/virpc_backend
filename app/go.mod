@@ -6,6 +6,7 @@ require (
 	github.com/docker/docker v20.10.22+incompatible
 	github.com/gofiber/fiber/v2 v2.40.1
 	github.com/gofiber/websocket/v2 v2.1.2
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/prometheus/procfs v0.9.0
 	go.mongodb.org/mongo-driver v1.11.1
 )
