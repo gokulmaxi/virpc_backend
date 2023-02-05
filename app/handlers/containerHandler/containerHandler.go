@@ -128,7 +128,30 @@ func list(c *fiber.Ctx) error {
 	jsondata, err := json.Marshal(data)
 	return c.Send(jsondata)
 }
+func listImage(c *fiber.Ctx) error {
+
+	coll := database.Instance.Db.Collection("images")
+	projectStage := bson.D{{
+		"$project", bson.D{
+			{"imagename", 1},
+		},
+	}}
+	cursor, err := coll.Aggregate(context.TODO(), mongo.Pipeline{projectStage})
+	if err != nil {
+		return c.Send(utilities.MsgJson(utilities.Failure))
+	}
+	var data []bson.M
+	if err = cursor.All(context.TODO(), &data); err != nil {
+		return c.Send(utilities.MsgJson(utilities.Failure))
+	}
+	jsondata, err := json.Marshal(data)
+	if data == nil {
+		return c.Send(utilities.MsgJson(utilities.NoData))
+	}
+	return c.Send(jsondata)
+}
 func Register(_route fiber.Router) {
 	_route.Post("/create", insertContainer)
 	_route.Get("/list", list)
+	_route.Get("/imageList", listImage)
 }
