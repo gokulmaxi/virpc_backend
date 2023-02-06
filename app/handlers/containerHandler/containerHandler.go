@@ -77,53 +77,65 @@ func insertContainer(c *fiber.Ctx) error {
 func list(c *fiber.Ctx) error {
 	coll := database.Instance.Db.Collection("containers")
 
-	adminSubProjectStage := bson.D{
+	userSubProjectStage := bson.D{
 		{"$project", bson.D{
 			{"name", 1},
 		}},
 	}
-	adminLookupStage := bson.D{
+	userLookupStage := bson.D{
 		{"$lookup", bson.D{
 			{"from", "users"},
-			{"pipeline", bson.A{adminSubProjectStage}},
-			{"localField", "adminid"},
+			{"pipeline", bson.A{userSubProjectStage}},
+			{"localField", "userid"},
 			{"foreignField", "_id"},
-			{"as", "adminUser"},
+			{"as", "userData"},
 		}}}
-	adminUnWindStage := bson.D{
-		{"$unwind", "$adminUser"},
+	userUnWindStage := bson.D{
+		{"$unwind", "$userData"},
 	}
-	subProjectStage := bson.D{
-		{"$project", bson.D{
-			{"imagename", 1},
-		}},
-	}
-	lookupStage := bson.D{
+
+	batchSubLookupStage := bson.D{
 		{"$lookup", bson.D{
 			{"from", "images"},
-			{"pipeline", bson.A{subProjectStage}},
-			{"localField", "imageId"},
+			// {"pipeline", bson.A{userSubProjectStage}},
+			{"localField", "imageid"},
 			{"foreignField", "_id"},
-			{"as", "image"},
+			{"as", "imageData"},
 		}}}
-	unWindStage := bson.D{
-		{"$unwind", "$image"},
+	batchLookupStage := bson.D{
+		{"$lookup", bson.D{
+			{"from", "batch"},
+			{"pipeline", bson.A{batchSubLookupStage}},
+			{"localField", "batchid"},
+			{"foreignField", "_id"},
+			{"as", "batchData"},
+		}}}
+
+	batchUnwindStage := bson.D{
+		{"$unwind", "$batchData"},
+	}
+	imageUnwindStage := bson.D{
+		{"$unwind", "$batchData.imageData"},
 	}
 	projectStage := bson.D{{
 		"$project", bson.D{
-			{"adminid", 0},
-			{"imageId", 0},
-			{"userdetails", 0},
-			{"add_features", 0},
+			{"userData.name", 1},
+			{"userData._id", 1},
+			{"batchData.batchname", 1},
+			{"batchData._id", 1},
+			{"batchData.startdate", 1},
+			{"batchData.imageData.imagename", 1},
+			{"batchData.imageData._id", 1},
 		},
 	}}
-	cursor, err := coll.Aggregate(context.TODO(), mongo.Pipeline{adminLookupStage, adminUnWindStage, lookupStage, unWindStage, projectStage})
+	cursor, err := coll.Aggregate(context.TODO(), mongo.Pipeline{userLookupStage, userUnWindStage,
+		batchLookupStage, batchUnwindStage, imageUnwindStage, projectStage})
 	if err != nil {
-		return err
+		return c.Send(utilities.MsgJson(utilities.Failure))
 	}
 	var data []bson.M
 	if err = cursor.All(context.TODO(), &data); err != nil {
-		panic(err)
+		return c.Send(utilities.MsgJson(utilities.Failure))
 	}
 	jsondata, err := json.Marshal(data)
 	return c.Send(jsondata)

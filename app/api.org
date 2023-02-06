@@ -117,7 +117,7 @@ message : "success",
 	}
 ]
 * container management
-** TODO /api/container/create
+** DONE /api/container/create
 *** Input
 **** New Batch
 {
@@ -161,7 +161,7 @@ message : "success",
 {
   message:"internal_error",
 }
-** TODO /api/container/image
+** DONE /api/container/image
 *** Output
 **** Success
 [
@@ -179,46 +179,46 @@ message : "success",
   message:"internal_error",
 	}
 
-** TODO /api/container/list
+** DONE /api/container/list
 *** Output
 [
 	{
-		"_id": "63d3a766650e056ed7c27a3a",
-		"User": {
-			"_id": "63cabfc368bfee674fe60aa2",
-			"name": "Joesd"
+		"_id": "63dfe5f14bb14ad41a1272ac",
+		"batchData": {
+			"_id": "63dfe2647373767b9593eba0",
+			"batchname": "linux training - II",
+			"imageData": {
+				"_id": "63da047393c6c8d13a4388b5",
+				"imagename": "python"
+			},
+			"startdate": "02/05/2020"
 		},
-		"batch":{
-        "_id": 123123123123
-        "batchname":"linux training - I"
-        "startdate": "11/11/22"
-        },
-		"image": {
-			"_id": "63ce91e4d38d3dd02142dd1f",
-			"imagename": "python"
-		},
-		"containerStatus": "active"
-		"containerName": "foxy"
+		"userData": {
+			"_id": "63dfbf2e9a098a96dfcdf1aa",
+			"name": "Kishhh"
+		}
 	}
 ]
-
 * batch management
 ** TODO /api/batch/container/list
 *** Output
 [
 	{
-	"_id" : "#dsdfsdfsdfs2312",
-	"batchname" : "linux desktop - IIf",
-	"batchdescription":"this is new batch for linux training one",
-	"Image":
-{
-“_id":63ce91e4d38d3dd02142dd1f",
-“Imagename” : “ubuntudesktop”,
-}
-	"startdate":"02/05/2020",
-	"enddate":"02/05/2020",
-	"totaldays":55,
-	"Cpulimit":5,
-	"add_features": ["internet_access", "root_access", "gpu_support"],
+		"_id": "63dfe2647373767b9593eba0",
+		"addfeatures": [
+			"internet_access",
+			"root_access",
+			"gpu_support"
+		],
+		"batchdescription": "this is new batch for linux training one",
+		"batchname": "linux training - II",
+		"cpulimit": 5,
+		"enddate": "02/05/2020",
+		"imageData": {
+			"_id": "63da047393c6c8d13a4388b5",
+			"imagename": "python"
+		},
+		"startdate": "02/05/2020",
+		"totaldays": 5
 	}
 ]
