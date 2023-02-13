@@ -77,8 +77,49 @@ message : "success",
 {
   message:"internal_error",
 }
+** DONE /api/admin/user/list
+*** Input :
+{
+}
+*** Output:
+**** Success
+[
+	{
+		"_id": "63e8d2ef38bfd8204c0d3e68",
+		"accound_status": true,
+		"data": {
+			"imageurl": "https:///dfgsfsdfsdfsdfsd",
+			"phoneno": "9562513517"
+		},
+		"email": "kishore.ct19@bitsathy.ac.in",
+		"name": "kishore"
+	}
+]
+**** Failure
+{
+  message:"internal_error",
+}
+** DONE /api/admin//list
+*** Input :
+{
+}
+*** Output:
+**** Success
+[
+	{
+		"_id": "63e8cf0238bfd8204c0d3e67",
+		"accound_status": true,
+		"email": "asdfsdle02@hotmail.com",
+		"name": "dsfsd"
+	}
+]
+**** Failure
+{
+  message:"internal_error",
+}
 * image creation
 ** DONE /api/admin/image/create
+*** TODO add image id ,image size, image status
 *** Input :
 {
 	"imagename": "python",
@@ -116,8 +157,51 @@ message : "success",
 		"requiregpu": false
 	}
 ]
+** TODO /api/admin/image/get [POST]
+*** Input :
+	{
+	"_id" : "#dsdfsdfsdfs2312",
+	}
+**** Success :white_check_mark::
+{
+	imageid : "23432sfdfsd3",   // image id in docker images
+	Imagesize : “12GB”,
+	"imagename": "python",
+	"baseimage": "python",
+	"imageversion": "1.0.0",
+	"imagedescription": "1.0.0",
+	“Imagestatus”:”active / declined”
+	"requiregpu": false
+	“pullcmd”:”docker-desktop-1011”,
+	“admin”: {
+				_id:”5456456s4dfsdfsdf”,
+				name:”admin”
+	}
+
+	}
+**** Failure :x: :
+{
+  message:"internal_error",
+	}
+
+** TODO /api/image/delete [DELETE]
+Input :
+	{
+	"_id" : "#dsdfsdfsdfs2312",
+	}
+Success :white_check_mark::
+{
+	message : "delelted",   // image id in docker images
+}
+Failure :x: :
+{
+  message:"internal_error",
+	}
 * container management
-** DONE /api/container/create
+** TODO /api/container/create
+- TODO add adminid in container and batch
+- TODO add total days in db
+- TODO add container status in db {running,stopped}
 *** Input
 **** New Batch
 {
@@ -161,6 +245,45 @@ message : "success",
 {
   message:"internal_error",
 }
+** TODO /api/container/delete [DELETE]
+Input :
+	{
+	"_id" : "#dsdfsdfsdfs2312",
+	}
+**** Success
+{
+	message : "delelted",   // image id in docker images
+}
+**** Failure
+{
+  message:"internal_error",
+	}
+** TODO /api/container/stop [POST]
+Input :
+	{
+	"_id" : "#dsdfsdfsdfs2312",
+	}
+**** Success
+{
+	message : "stopped",   // image id in docker images
+}
+**** Failure
+{
+  message:"internal_error",
+	}
+** TODO /api/container/start [POST]
+Input :
+	{
+	"_id" : "#dsdfsdfsdfs2312",
+	}
+**** Success
+{
+	message : "started",   // image id in docker images
+}
+**** Failure
+{
+  message:"internal_error",
+	}
 ** DONE /api/container/image
 *** Output
 **** Success
@@ -180,6 +303,7 @@ message : "success",
 	}
 
 ** DONE /api/container/list
+- TODO container name added
 *** Output
 [
 	{
@@ -197,6 +321,7 @@ message : "success",
 			"_id": "63dfbf2e9a098a96dfcdf1aa",
 			"name": "Kishhh"
 		}
+
 	}
 ]
 * batch management
