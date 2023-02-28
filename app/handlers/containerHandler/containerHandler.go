@@ -65,8 +65,11 @@ func insertContainer(c *fiber.Ctx) error {
 		container.BatchId, err = primitive.ObjectIDFromHex(req["batchid"].(string))
 	}
 	// TODO add container id while creating new containers
-	container.ContainerID = "asdf_asdf"
+	container.ContainerID = "hest"
+	//TODO add enums to change status
+	container.Status = "running"
 	container.ContainerPassword = req["containerpassword"].(string)
+	container.AdminId, err = primitive.ObjectIDFromHex(req["adminId"].(string))
 	collcontainer := database.Instance.Db.Collection("containers")
 	_, err = collcontainer.InsertOne(context.TODO(), container)
 	if err != nil {

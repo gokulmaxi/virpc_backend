@@ -6,8 +6,11 @@ import (
 	"app/utilities"
 	"context"
 	"encoding/json"
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -69,7 +72,30 @@ func list(c *fiber.Ctx) error {
 	}
 	return c.Send(jsondata)
 }
+func get(c *fiber.Ctx) error {
+
+	var req map[string]interface{}
+	results := imageModel.ImageModel{}
+	err := json.Unmarshal(c.Body(), &req)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(req["id"])
+	ImageId, err := primitive.ObjectIDFromHex(req["id"].(string))
+	filter := bson.D{{"_id", ImageId}}
+	fmt.Println(filter)
+	coll := database.Instance.Db.Collection("images")
+	err = coll.FindOne(context.TODO(), filter).Decode(&results)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return c.Send(utilities.MsgJson(utilities.NoData))
+		}
+	}
+	jsondata, err := json.Marshal(results)
+	return c.Send(jsondata)
+}
 func Register(_route fiber.Router) {
 	_route.Post("/create", insertImage)
 	_route.Get("/list", list)
+	_route.Post("/get", get)
 }

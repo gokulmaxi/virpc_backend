@@ -198,15 +198,13 @@ Failure :x: :
   message:"internal_error",
 	}
 * container management
-** TODO /api/container/create
-- TODO add adminid in container and batch
-- TODO add total days in db
-- TODO add container status in db {running,stopped}
+** DONE /api/container/create
+- DONE add adminid in container and batch
+- DONE add total days in db
+- DONE add container status in db {running,stopped}
 *** Input
 **** New Batch
 {
-	"batch": {
-		"batchname": "linux training - II",
 		"batchdescription": "this is new batch for linux training one",
 		"startdate": "02/05/2020",
 		"enddate": "02/05/2020",

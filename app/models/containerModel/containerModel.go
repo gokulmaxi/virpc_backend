@@ -12,8 +12,10 @@ type UserDetails struct {
 type ContainerRequestModel struct {
 	UserId            primitive.ObjectID
 	BatchId           primitive.ObjectID
+	AdminId           primitive.ObjectID
 	ContainerPassword string
 	ContainerID       string
+	Status            string
 }
 
 // {
