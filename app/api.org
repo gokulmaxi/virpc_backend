@@ -256,7 +256,7 @@ Input :
 {
   message:"internal_error",
 	}
-** TODO /api/container/stop [POST]
+** DONE /api/container/stop [POST]
 Input :
 	{
 	"_id" : "#dsdfsdfsdfs2312",
@@ -269,7 +269,7 @@ Input :
 {
   message:"internal_error",
 	}
-** TODO /api/container/start [POST]
+** DONE /api/container/start [POST]
 Input :
 	{
 	"_id" : "#dsdfsdfsdfs2312",

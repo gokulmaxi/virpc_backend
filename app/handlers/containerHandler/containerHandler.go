@@ -17,6 +17,38 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+func startContainer(c *fiber.Ctx) error {
+	var req map[string]interface{}
+	err := json.Unmarshal(c.Body(), &req)
+	if err != nil {
+		panic(err)
+	}
+	id, _ := primitive.ObjectIDFromHex(req["id"].(string))
+	filter := bson.D{{"_id", id}}
+	update := bson.D{{"$set", bson.D{{"status", containerModel.Running}}}}
+	coll := database.Instance.Db.Collection("containers")
+	_, err = coll.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		panic(err)
+	}
+	return c.Send(utilities.MsgJson(utilities.Success))
+}
+func stopContainer(c *fiber.Ctx) error {
+	var req map[string]interface{}
+	err := json.Unmarshal(c.Body(), &req)
+	if err != nil {
+		panic(err)
+	}
+	id, _ := primitive.ObjectIDFromHex(req["id"].(string))
+	filter := bson.D{{"_id", id}}
+	update := bson.D{{"$set", bson.D{{"status", containerModel.Stopped}}}}
+	coll := database.Instance.Db.Collection("containers")
+	_, err = coll.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		panic(err)
+	}
+	return c.Send(utilities.MsgJson(utilities.Success))
+}
 func insertContainer(c *fiber.Ctx) error {
 	var container = containerModel.ContainerRequestModel{}
 	var req map[string]interface{}
@@ -48,7 +80,7 @@ func insertContainer(c *fiber.Ctx) error {
 	} else {
 		container.UserId = results.User_id
 	}
-	// TODO create new batch if not exist
+	// DONE create new batch if not exist
 	if req["batchid"] == nil {
 		var batch = batchModel.BatchModel{}
 		mapstructure.Decode(req["batch"], &batch)
@@ -66,8 +98,7 @@ func insertContainer(c *fiber.Ctx) error {
 	}
 	// TODO add container id while creating new containers
 	container.ContainerID = "hest"
-	//TODO add enums to change status
-	container.Status = "running"
+	container.Status = containerModel.Running
 	container.ContainerPassword = req["containerpassword"].(string)
 	container.AdminId, err = primitive.ObjectIDFromHex(req["adminId"].(string))
 	collcontainer := database.Instance.Db.Collection("containers")
@@ -79,7 +110,7 @@ func insertContainer(c *fiber.Ctx) error {
 }
 func list(c *fiber.Ctx) error {
 	coll := database.Instance.Db.Collection("containers")
-
+	//TODO list broken due to change container model
 	userSubProjectStage := bson.D{
 		{"$project", bson.D{
 			{"name", 1},
@@ -169,4 +200,6 @@ func Register(_route fiber.Router) {
 	_route.Post("/create", insertContainer)
 	_route.Get("/list", list)
 	_route.Get("/imageList", listImage)
+	_route.Post("/stop", stopContainer)
+	_route.Post("/start", startContainer)
 }

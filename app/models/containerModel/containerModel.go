@@ -4,6 +4,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+const (
+	Running = "running"
+	Stopped = "stopped"
+)
+
 type UserDetails struct {
 	Email             string
 	Name              string
