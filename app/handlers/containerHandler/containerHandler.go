@@ -97,7 +97,8 @@ func insertContainer(c *fiber.Ctx) error {
 		container.BatchId, err = primitive.ObjectIDFromHex(req["batchid"].(string))
 	}
 	// TODO add container id while creating new containers
-	container.ContainerID = "hest"
+	container.ContainerID = "asdf123asdf"
+	container.ContainerName = "hest"
 	container.Status = containerModel.Running
 	container.ContainerPassword = req["containerpassword"].(string)
 	container.AdminId, err = primitive.ObjectIDFromHex(req["adminId"].(string))
@@ -128,6 +129,22 @@ func list(c *fiber.Ctx) error {
 		{"$unwind", "$userData"},
 	}
 
+	adminSubProjectStage := bson.D{
+		{"$project", bson.D{
+			{"name", 1},
+		}},
+	}
+	adminLookupStage := bson.D{
+		{"$lookup", bson.D{
+			{"from", "users"},
+			{"pipeline", bson.A{adminSubProjectStage}},
+			{"localField", "adminid"},
+			{"foreignField", "_id"},
+			{"as", "adminData"},
+		}}}
+	adminUnWindStage := bson.D{
+		{"$unwind", "$adminData"},
+	}
 	batchSubLookupStage := bson.D{
 		{"$lookup", bson.D{
 			{"from", "images"},
@@ -154,15 +171,20 @@ func list(c *fiber.Ctx) error {
 	projectStage := bson.D{{
 		"$project", bson.D{
 			{"userData.name", 1},
+			{"adminData.name", 1},
 			{"userData._id", 1},
+			{"adminData._id", 1},
 			{"batchData.batchname", 1},
 			{"batchData._id", 1},
 			{"batchData.startdate", 1},
 			{"batchData.imageData.imagename", 1},
 			{"batchData.imageData._id", 1},
+			{"status", 1},
+			{"containername", 1},
+			{"containerid", 1},
 		},
 	}}
-	cursor, err := coll.Aggregate(context.TODO(), mongo.Pipeline{userLookupStage, userUnWindStage,
+	cursor, err := coll.Aggregate(context.TODO(), mongo.Pipeline{userLookupStage, userUnWindStage, adminLookupStage, adminUnWindStage,
 		batchLookupStage, batchUnwindStage, imageUnwindStage, projectStage})
 	if err != nil {
 		return c.Send(utilities.MsgJson(utilities.Failure))
@@ -196,10 +218,21 @@ func listImage(c *fiber.Ctx) error {
 	}
 	return c.Send(jsondata)
 }
+func deleteContainer(c *fiber.Ctx) error {
+	id, err := primitive.ObjectIDFromHex(c.Params("id"))
+	filter := bson.D{{"_id", id}}
+	coll := database.Instance.Db.Collection("containers")
+	_, err = coll.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		return c.Send(utilities.MsgJson(utilities.Failure))
+	}
+	return c.Send(utilities.MsgJson(utilities.Success))
+}
 func Register(_route fiber.Router) {
 	_route.Post("/create", insertContainer)
 	_route.Get("/list", list)
 	_route.Get("/imageList", listImage)
 	_route.Post("/stop", stopContainer)
 	_route.Post("/start", startContainer)
+	_route.Delete("/delete/:id", deleteContainer)
 }

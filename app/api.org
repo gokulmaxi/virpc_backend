@@ -157,7 +157,7 @@ message : "success",
 		"requiregpu": false
 	}
 ]
-** TODO /api/admin/image/get [POST]
+** DONE /api/admin/image/get [POST]
 *** Input :
 	{
 	"_id" : "#dsdfsdfsdfs2312",
@@ -184,7 +184,7 @@ message : "success",
   message:"internal_error",
 	}
 
-** TODO /api/image/delete [DELETE]
+** DONE /api/image/delete [DELETE]
 Input :
 	{
 	"_id" : "#dsdfsdfsdfs2312",
@@ -243,7 +243,7 @@ Failure :x: :
 {
   message:"internal_error",
 }
-** TODO /api/container/delete [DELETE]
+** DONE /api/container/delete [DELETE]
 Input :
 	{
 	"_id" : "#dsdfsdfsdfs2312",
@@ -301,7 +301,7 @@ Input :
 	}
 
 ** DONE /api/container/list
-- TODO container name added
+- done container name added
 *** Output
 [
 	{
@@ -323,7 +323,7 @@ Input :
 	}
 ]
 * batch management
-** TODO /api/batch/container/list
+** DONE /api/batch/container/list
 *** Output
 [
 	{

@@ -20,6 +20,7 @@ type ContainerRequestModel struct {
 	AdminId           primitive.ObjectID
 	ContainerPassword string
 	ContainerID       string
+	ContainerName     string
 	Status            string
 }
 
