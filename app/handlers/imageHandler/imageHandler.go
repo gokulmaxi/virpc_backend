@@ -27,6 +27,9 @@ func insertImage(c *fiber.Ctx) error {
 		return c.Send(utilities.MsgJson(utilities.Failure))
 	}
 	image.ImageStatus = active
+	// TODO add image status after pulling
+	image.ImageId = "Tempid"
+	image.ImageSize = "1G"
 	coll := database.Instance.Db.Collection("images")
 	_, err = coll.InsertOne(context.TODO(), image)
 	if err != nil {

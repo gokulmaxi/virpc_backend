@@ -11,6 +11,8 @@ type ImageModel struct {
 	RequireGpu       bool
 	AdminId          primitive.ObjectID `bson:"adminId"`
 	ImageStatus      string
+	ImageId          string
+	ImageSize        string
 }
 
 // {

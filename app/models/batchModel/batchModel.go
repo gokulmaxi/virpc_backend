@@ -7,8 +7,9 @@ type BatchModel struct {
 	BatchDescription string
 	Startdate        string
 	Enddate          string
-	Totaldays        string
+	Totaldays        int
 	ImageId          primitive.ObjectID
+	AdminId          primitive.ObjectID
 	CpuLimit         int
 	AddFeatures      []string
 }

@@ -119,7 +119,7 @@ message : "success",
 }
 * image creation
 ** DONE /api/admin/image/create
-*** TODO add image id ,image size, image status
+- add image id ,image size, image status
 *** Input :
 {
 	"imagename": "python",
@@ -130,7 +130,7 @@ message : "success",
 	"requiregpu": false,
 	"adminid": "63ca8a9a417a12a181df1abc"
 }
-***  Output:
+*** Output:
 **** Success
 {
   message : "done",
@@ -345,3 +345,28 @@ Input :
 		"totaldays": 5
 	}
 ]
+
+** DONE /api/batch/list
+*** Output
+[
+    {
+    "_id":"asdfasdfasdfasdf",
+    "batchname": "New ",
+    "totaldays": 55,
+    "startdata": "22/2/22",
+    }
+]
+
+* dashboard management
+** TODO ws /dashboard/sysinfo
+*** OUTPUT
+{
+"freememory":234,
+"freecpucores":234,
+"freestorage":123,
+"freeswap":23
+"totalmemory":234,
+"totalcpucores":234,
+"totalstorage":123,
+"totalswap":23
+}

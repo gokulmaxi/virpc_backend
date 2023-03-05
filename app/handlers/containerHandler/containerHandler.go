@@ -87,6 +87,7 @@ func insertContainer(c *fiber.Ctx) error {
 		// TODO why obejct id is not parsed
 		batchData := req["batch"].(map[string]interface{})
 		batch.ImageId, err = primitive.ObjectIDFromHex(batchData["imageid"].(string))
+		batch.AdminId, err = primitive.ObjectIDFromHex(req["adminId"].(string))
 		batchColl := database.Instance.Db.Collection("batch")
 		col, err := batchColl.InsertOne(context.TODO(), batch)
 		if err != nil {
@@ -111,7 +112,6 @@ func insertContainer(c *fiber.Ctx) error {
 }
 func list(c *fiber.Ctx) error {
 	coll := database.Instance.Db.Collection("containers")
-	//TODO list broken due to change container model
 	userSubProjectStage := bson.D{
 		{"$project", bson.D{
 			{"name", 1},
