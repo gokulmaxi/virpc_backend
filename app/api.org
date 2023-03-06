@@ -362,7 +362,6 @@ Input :
 *** OUTPUT
 {
 "freememory":234,
-"freecpucores":234,
 "freestorage":123,
 "freeswap":23
 "totalmemory":234,
