@@ -23,7 +23,7 @@ func Register(_route fiber.Router) {
 		}
 		return c.Send(data)
 	})
-	_route.Get("/mem", websocket.New(func(c *websocket.Conn) {
+	_route.Get("/sysinfo", websocket.New(func(c *websocket.Conn) {
 		sysStat := make(map[string]interface{})
 		for {
 			memStats, err := utilities.Proc.Meminfo()
@@ -34,12 +34,17 @@ func Register(_route fiber.Router) {
 			if err != nil {
 				panic(err)
 			}
+			StorageStat, err := utilities.GetStorage()
+			if err != nil {
+				panic(err)
+			}
 			sysStat["freememory"] = memStats.MemFree
 			sysStat["freeswap"] = memStats.SwapFree
 			sysStat["totalmemory"] = memStats.MemTotal
 			sysStat["totalswap"] = memStats.SwapTotal
 			sysStat["cpucores"] = cpuStat[0].CPUCores
-
+			sysStat["totalstorage"] = StorageStat.Totalsize
+			sysStat["freestorage"] = StorageStat.Available
 			data, err := json.Marshal(sysStat)
 			if err != nil {
 				panic(err)
