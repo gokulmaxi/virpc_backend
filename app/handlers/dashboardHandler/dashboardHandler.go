@@ -53,7 +53,7 @@ func Register(_route fiber.Router) {
 			if err != nil {
 				break
 			}
-			time.Sleep(2 * time.Second)
+			time.Sleep(35 * time.Second)
 		}
 	}))
 }
