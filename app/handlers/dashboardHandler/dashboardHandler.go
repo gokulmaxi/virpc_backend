@@ -4,6 +4,7 @@ import (
 	"app/utilities"
 	"encoding/json"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -38,10 +39,11 @@ func Register(_route fiber.Router) {
 			if err != nil {
 				panic(err)
 			}
-			sysStat["freememory"] = memStats.MemFree
-			sysStat["freeswap"] = memStats.SwapFree
-			sysStat["totalmemory"] = memStats.MemTotal
-			sysStat["totalswap"] = memStats.SwapTotal
+			// NOTE meminfo returns memoru in kb
+			sysStat["freememory"] = float64(*memStats.MemAvailable) / math.Pow(1000, 2)
+			sysStat["freeswap"] = float64(*memStats.SwapFree) / math.Pow(1000, 2)
+			sysStat["totalmemory"] = float64(*memStats.MemTotal) / math.Pow(1000, 2)
+			sysStat["totalswap"] = float64(*memStats.SwapTotal) / math.Pow(1000, 2)
 			sysStat["cpucores"] = cpuStat[0].CPUCores
 			sysStat["totalstorage"] = StorageStat.Totalsize
 			sysStat["freestorage"] = StorageStat.Available

@@ -124,9 +124,102 @@ func signout(c *fiber.Ctx) error {
 	}
 	return c.SendString("logged out")
 }
+
+func getUserContainers(c *fiber.Ctx) error {
+
+	var req map[string]interface{}
+	err := json.Unmarshal(c.Body(), &req)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(req["_id"])
+	userId, err := primitive.ObjectIDFromHex(req["userid"].(string))
+	filter := bson.D{{"userid", userId}}
+	coll := database.Instance.Db.Collection("containers")
+	matchStage := bson.D{
+		{"$match", filter},
+	}
+
+	subProjectStage := bson.D{
+		{"$project", bson.D{
+			{"batchname", 1},
+			{"batchdescription", 1},
+			{"totaldays", 1},
+			{"enddate", 1},
+		}},
+	}
+	lookupStage := bson.D{
+		{"$lookup", bson.D{
+			{"from", "batch"},
+			{"pipeline", bson.A{subProjectStage}},
+			{"localField", "batchid"},
+			{"foreignField", "_id"},
+			{"as", "batchdetails"},
+		}}}
+	unWindStage := bson.D{
+		{"$unwind", "$batchdetails"},
+	}
+	projectStage := bson.D{{
+		"$project", bson.D{
+			{"adminid", 0},
+			{"userid", 0},
+			{"batchid", 0},
+			{"containerpassword", 0},
+		},
+	}}
+	cursor, err := coll.Aggregate(context.TODO(), mongo.Pipeline{matchStage, lookupStage, unWindStage, projectStage})
+	if err != nil {
+		return c.Send(utilities.MsgJson(utilities.Failure))
+	}
+	var data []bson.M
+	if err = cursor.All(context.TODO(), &data); err != nil {
+		return c.Send(utilities.MsgJson(utilities.Failure))
+	}
+	jsondata, err := json.Marshal(data)
+	if data == nil {
+		return c.Send(utilities.MsgJson(utilities.NoData))
+	}
+	return c.Send(jsondata)
+}
+
+func getContainerPass(c *fiber.Ctx) error {
+
+	var req map[string]interface{}
+	err := json.Unmarshal(c.Body(), &req)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(req["_id"])
+	containerId, err := primitive.ObjectIDFromHex(req["containerid"].(string))
+	filter := bson.D{{"_id", containerId}}
+	coll := database.Instance.Db.Collection("containers")
+	matchStage := bson.D{
+		{"$match", filter},
+	}
+	projectStage := bson.D{{
+		"$project", bson.D{
+			{"containerpassword", 1},
+		},
+	}}
+	cursor, err := coll.Aggregate(context.TODO(), mongo.Pipeline{matchStage, projectStage})
+	if err != nil {
+		return c.Send(utilities.MsgJson(utilities.Failure))
+	}
+	var data []bson.M
+	if err = cursor.All(context.TODO(), &data); err != nil {
+		return c.Send(utilities.MsgJson(utilities.Failure))
+	}
+	jsondata, err := json.Marshal(data[0])
+	if data == nil {
+		return c.Send(utilities.MsgJson(utilities.NoData))
+	}
+	return c.Send(jsondata)
+}
 func Register(_route fiber.Router) {
 	_route.Post("/signup", signup)
 	_route.Post("/login", signin)
 	_route.Get("/logout", signout)
 	_route.Post("/activation", updateAcc)
+	_route.Post("/containerlist", getUserContainers)
+	_route.Post("/containerpass", getContainerPass)
 }

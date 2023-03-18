@@ -369,3 +369,40 @@ Input :
 "totalstorage":123,
 "totalswap":23
 }
+
+* user management
+** TODO /api/user/containerlist [POST]
+*** Input :
+	{
+	"_id" : "#dsdfsdfsdfs2312",
+	}
+**** Success
+{
+    "_id":"dbcontainerid"
+	batchname : "23432sfdfsd3",   // image id in docker images
+	batchdescription: “12GB”,
+	"containerid": "python",
+	"containerstatus": "python",
+	"batchenddate": "1.0.0",
+	"baseimage": "1.0.0",
+	“totaldays”:”active / declined”
+	}
+**** Failure :x: :
+{
+  message:"internal_error",
+	}
+
+** TODO /api/user/getpass [POST]
+*** Input :
+	{
+	"_id" : "#dsdfsdfsdfs2312",
+	}
+**** Success
+{
+    "_id":"dbcontainerid"
+	“password”:"verystrong"
+	}
+**** Failure :x: :
+{
+  message:"internal_error",
+	}

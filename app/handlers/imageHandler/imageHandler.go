@@ -7,7 +7,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 
+	"github.com/docker/docker/api/types"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -15,10 +17,14 @@ import (
 )
 
 const (
-	active   = "active"
-	deactive = "deactive"
+	downloading = "downloading"
+	active      = "active"
+	deactive    = "deactive"
 )
 
+func pullImage(ctx context.Context) {
+
+}
 func insertImage(c *fiber.Ctx) error {
 	var image = imageModel.ImageModel{}
 	req := c.Body()
@@ -26,8 +32,29 @@ func insertImage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Send(utilities.MsgJson(utilities.Failure))
 	}
-	image.ImageStatus = active
-	// TODO add image status after pulling
+	image.ImageStatus = downloading
+	out, err := utilities.Docker.ImagePull(context.TODO(), image.ImagePull, types.ImagePullOptions{})
+	// TODO run image pull as background and add new status for downloading and active
+	if err != nil {
+		return c.Send(utilities.MsgJson(utilities.Failure))
+	}
+	defer out.Close()
+	buf := make([]byte, 4096)
+	for {
+		_, err := out.Read(buf)
+		if err != nil {
+			break
+		}
+		fmt.Print(string(buf))
+	}
+	// Get image information
+	imageInfo, _, err := utilities.Docker.ImageInspectWithRaw(context.TODO(), image.ImagePull)
+	if err != nil {
+		return c.Send(utilities.MsgJson(utilities.Failure))
+	}
+	// Get size of image
+	imageSize := imageInfo.Size
+	fmt.Println("Total image size is %d", imageSize/int64(math.Pow(1000, 3)))
 	image.ImageId = "Tempid"
 	image.ImageSize = "1G"
 	coll := database.Instance.Db.Collection("images")
