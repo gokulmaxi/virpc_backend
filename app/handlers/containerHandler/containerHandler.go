@@ -4,14 +4,21 @@ import (
 	"app/database"
 	"app/models/batchModel"
 	"app/models/containerModel"
+	"app/models/imageModel"
 	"app/models/userModel"
 	"app/utilities"
 	"context"
 	"encoding/json"
 	"fmt"
 
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/api/types/strslice"
+	"github.com/docker/go-connections/nat"
 	"github.com/gofiber/fiber/v2"
 	"github.com/mitchellh/mapstructure"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -50,9 +57,10 @@ func stopContainer(c *fiber.Ctx) error {
 	return c.Send(utilities.MsgJson(utilities.Success))
 }
 func insertContainer(c *fiber.Ctx) error {
-	var container = containerModel.ContainerRequestModel{}
+	var containerData = containerModel.ContainerRequestModel{}
 	var req map[string]interface{}
 	var results userModel.UserModel
+	var containerImageId primitive.ObjectID
 	err := json.Unmarshal(c.Body(), &req)
 	if err != nil {
 		panic(err)
@@ -75,10 +83,10 @@ func insertContainer(c *fiber.Ctx) error {
 			if err != nil {
 				return c.Send(utilities.MsgJson(utilities.Failure))
 			}
-			container.UserId = userId.InsertedID.(primitive.ObjectID)
+			containerData.UserId = userId.InsertedID.(primitive.ObjectID)
 		}
 	} else {
-		container.UserId = results.User_id
+		containerData.UserId = results.User_id
 	}
 	// DONE create new batch if not exist
 	if req["batchid"] == nil {
@@ -87,24 +95,52 @@ func insertContainer(c *fiber.Ctx) error {
 		// TODO why obejct id is not parsed
 		batchData := req["batch"].(map[string]interface{})
 		batch.ImageId, err = primitive.ObjectIDFromHex(batchData["imageid"].(string))
+		containerImageId = batch.ImageId
 		batch.AdminId, err = primitive.ObjectIDFromHex(req["adminId"].(string))
 		batchColl := database.Instance.Db.Collection("batch")
 		col, err := batchColl.InsertOne(context.TODO(), batch)
 		if err != nil {
 			return c.Send(utilities.MsgJson(utilities.Failure))
 		}
-		container.BatchId = col.InsertedID.(primitive.ObjectID)
+		containerData.BatchId = col.InsertedID.(primitive.ObjectID)
 	} else {
-		container.BatchId, err = primitive.ObjectIDFromHex(req["batchid"].(string))
+		var batchResult batchModel.BatchModel
+		containerData.BatchId, err = primitive.ObjectIDFromHex(req["batchid"].(string))
+		filter := bson.D{{"_id", containerData.BatchId}}
+		coll := database.Instance.Db.Collection("batch")
+		err = coll.FindOne(context.TODO(), filter).Decode(&batchResult)
+		if err != nil {
+			return c.Send(utilities.MsgJson(utilities.Failure))
+		}
+		containerImageId = batchResult.ImageId
+	}
+	// find image pull command
+	var imageResult imageModel.ImageModel
+	imageFilter := bson.D{{"_id", containerImageId}}
+	imageColl := database.Instance.Db.Collection("images")
+	err = imageColl.FindOne(context.TODO(), imageFilter).Decode(&imageResult)
+	if err != nil {
+		return c.Send(utilities.MsgJson(utilities.Failure))
 	}
 	// TODO add container id while creating new containers
-	container.ContainerID = "asdf123asdf"
-	container.ContainerName = "hest"
-	container.Status = containerModel.Running
-	container.ContainerPassword = req["containerpassword"].(string)
-	container.AdminId, err = primitive.ObjectIDFromHex(req["adminId"].(string))
+	fmt.Println("Creating container")
+	containerConfig := &container.Config{Image: imageResult.ImagePull, ExposedPorts: nat.PortSet{"6901/tcp": "6901/tcp"}}
+	resp, err := utilities.Docker.ContainerCreate(context.TODO(), containerConfig, &container.HostConfig{}, &network.NetworkingConfig{}, &v1.Platform{}, "conta")
+	if err != nil {
+		return c.Send(utilities.MsgJson(err.Error()))
+	}
+	// Start the container
+	fmt.Print(resp.ID)
+	if err := utilities.Docker.ContainerStart(context.TODO(), resp.ID, types.ContainerStartOptions{}); err != nil {
+		panic(err)
+	}
+	containerData.ContainerID = "asdf123asdf"
+	containerData.ContainerName = "hest"
+	containerData.Status = containerModel.Running
+	containerData.ContainerPassword = req["containerpassword"].(string)
+	containerData.AdminId, err = primitive.ObjectIDFromHex(req["adminId"].(string))
 	collcontainer := database.Instance.Db.Collection("containers")
-	_, err = collcontainer.InsertOne(context.TODO(), container)
+	_, err = collcontainer.InsertOne(context.TODO(), containerData)
 	if err != nil {
 		return c.Send(utilities.MsgJson(utilities.Failure))
 	}
