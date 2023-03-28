@@ -10,13 +10,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
-	"github.com/docker/docker/api/types/strslice"
-	"github.com/docker/go-connections/nat"
 	"github.com/gofiber/fiber/v2"
+	"github.com/goombaio/namegenerator"
 	"github.com/mitchellh/mapstructure"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"go.mongodb.org/mongo-driver/bson"
@@ -122,27 +123,48 @@ func insertContainer(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Send(utilities.MsgJson(utilities.Failure))
 	}
-	// TODO add container id while creating new containers
 	fmt.Println("Creating container")
-	containerConfig := &container.Config{Image: imageResult.ImagePull, ExposedPorts: nat.PortSet{"6901/tcp": "6901/tcp"}}
-	resp, err := utilities.Docker.ContainerCreate(context.TODO(), containerConfig, &container.HostConfig{}, &network.NetworkingConfig{}, &v1.Platform{}, "conta")
+	// Find network id of backend
+	// REVIEW will network id change every time if not get only once and use
+	net, err := utilities.Docker.NetworkInspect(context.Background(), "vir-pc_backend", types.NetworkInspectOptions{})
+	if err != nil {
+		panic(err)
+	}
+	containerConfig := &container.Config{Image: imageResult.ImagePull, Env: []string{"VNC_PW=asdasd"}}
+	seed := time.Now().UTC().UnixNano()
+	nameGenerator := namegenerator.NewNameGenerator(seed)
+
+	name := nameGenerator.Generate()
+	//create container
+	resp, err := utilities.Docker.ContainerCreate(context.TODO(), containerConfig, &container.HostConfig{}, &network.NetworkingConfig{}, &v1.Platform{}, name)
 	if err != nil {
 		return c.Send(utilities.MsgJson(err.Error()))
 	}
+	// attach container to backend network
+	networkConfig := &network.EndpointSettings{
+		NetworkID: net.ID,
+	}
+	err = utilities.Docker.NetworkConnect(context.Background(), net.ID, resp.ID, networkConfig)
+	if err != nil {
+		panic(err)
+	}
 	// Start the container
-	fmt.Print(resp.ID)
 	if err := utilities.Docker.ContainerStart(context.TODO(), resp.ID, types.ContainerStartOptions{}); err != nil {
 		panic(err)
 	}
-	containerData.ContainerID = "asdf123asdf"
-	containerData.ContainerName = "hest"
+	containerData.ContainerID = resp.ID
+	containerData.ContainerName = strings.Replace(name, "/", "", -1)
 	containerData.Status = containerModel.Running
 	containerData.ContainerPassword = req["containerpassword"].(string)
 	containerData.AdminId, err = primitive.ObjectIDFromHex(req["adminId"].(string))
 	collcontainer := database.Instance.Db.Collection("containers")
-	_, err = collcontainer.InsertOne(context.TODO(), containerData)
+	dbContainerData, err := collcontainer.InsertOne(context.TODO(), containerData)
 	if err != nil {
 		return c.Send(utilities.MsgJson(utilities.Failure))
+	}
+	err = utilities.Redis.Set(context.Background(), dbContainerData.InsertedID.(primitive.ObjectID).Hex(), containerData.ContainerName, 0).Err()
+	if err != nil {
+		return c.Send(utilities.MsgJson(err.Error()))
 	}
 	return c.Send(utilities.MsgJson(utilities.Success))
 }

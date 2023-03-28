@@ -34,6 +34,27 @@ services:
       - 27017:27017
     networks:
       - backend
+  openresty:
+    #image: gokuldp/kasm-backend
+    build: ./dynamic-proxy/
+    ports:
+      - 80:80
+    networks:
+      - backend
+    volumes:
+      - ./dynamic-proxy/conf:/etc/nginx/conf.d
+  redis:
+    image: "redis:alpine"
+    container_name: vir-pc-redis
+    command: redis-server --requirepass ${REDIS_PASS:-password123}
+    volumes:
+      - redis-data:/data
+      - redis-conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - backend
+volumes:
+  redis-data:
+  redis-conf:
 networks:
   frontend:
     driver: bridge

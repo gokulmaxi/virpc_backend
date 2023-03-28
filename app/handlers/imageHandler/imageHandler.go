@@ -32,7 +32,7 @@ func insertImage(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Send(utilities.MsgJson(utilities.Failure))
 	}
-	image.ImageStatus = downloading
+	image.ImageStatus = active
 	out, err := utilities.Docker.ImagePull(context.TODO(), image.ImagePull, types.ImagePullOptions{})
 	// TODO run image pull as background and add new status for downloading and active
 	if err != nil {
@@ -55,7 +55,7 @@ func insertImage(c *fiber.Ctx) error {
 	// Get size of image
 	imageSize := imageInfo.Size
 	fmt.Println("Total image size is %d", imageSize/int64(math.Pow(1000, 3)))
-	image.ImageId = "Tempid"
+	image.ImageId = imageInfo.ID
 	image.ImageSize = "1G"
 	coll := database.Instance.Db.Collection("images")
 	_, err = coll.InsertOne(context.TODO(), image)

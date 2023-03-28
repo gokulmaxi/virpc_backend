@@ -1,0 +1,3 @@
+[submodule "dynamic-proxy"]
+	path = dynamic-proxy
+	url = https://github.com/gokulmaxi/dynamic-proxy.git

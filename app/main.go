@@ -18,6 +18,7 @@ func main() {
 	//create mongodb instance
 	utilities.InitDocker()
 	utilities.InitProcfs()
+	utilities.InitRedis()
 	database.Connect()
 	app.Listen(":5000")
 }

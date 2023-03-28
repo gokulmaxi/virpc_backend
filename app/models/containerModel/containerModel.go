@@ -18,6 +18,7 @@ type ContainerRequestModel struct {
 	UserId            primitive.ObjectID
 	BatchId           primitive.ObjectID
 	AdminId           primitive.ObjectID
+	ContainerImage    string
 	ContainerPassword string
 	ContainerID       string
 	ContainerName     string
