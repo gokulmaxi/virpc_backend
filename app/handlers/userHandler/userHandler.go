@@ -199,6 +199,7 @@ func getContainerPass(c *fiber.Ctx) error {
 	projectStage := bson.D{{
 		"$project", bson.D{
 			{"containerpassword", 1},
+			{"containerport", 1},
 		},
 	}}
 	cursor, err := coll.Aggregate(context.TODO(), mongo.Pipeline{matchStage, projectStage})

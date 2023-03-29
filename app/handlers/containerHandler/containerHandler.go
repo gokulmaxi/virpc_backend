@@ -10,12 +10,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
+	"github.com/docker/go-connections/nat"
 	"github.com/gofiber/fiber/v2"
 	"github.com/goombaio/namegenerator"
 	"github.com/mitchellh/mapstructure"
@@ -130,13 +133,26 @@ func insertContainer(c *fiber.Ctx) error {
 	if err != nil {
 		panic(err)
 	}
-	containerConfig := &container.Config{Image: imageResult.ImagePull, Env: []string{"VNC_PW=asdasd"}}
+	containerConfig := &container.Config{Image: imageResult.ImagePull, Env: []string{"VNC_PW=asdasd"}, ExposedPorts: nat.PortSet{
+		"6901/tcp": struct{}{},
+	}}
 	seed := time.Now().UTC().UnixNano()
+	randomPort := strconv.Itoa(rand.Intn(2000) + 10000)
+	containerData.ContainerPort = randomPort
 	nameGenerator := namegenerator.NewNameGenerator(seed)
-
+	hostConfig := &container.HostConfig{
+		PortBindings: nat.PortMap{
+			"6901/tcp": []nat.PortBinding{
+				{
+					HostIP:   "0.0.0.0",
+					HostPort: randomPort,
+				},
+			},
+		},
+	}
 	name := nameGenerator.Generate()
 	//create container
-	resp, err := utilities.Docker.ContainerCreate(context.TODO(), containerConfig, &container.HostConfig{}, &network.NetworkingConfig{}, &v1.Platform{}, name)
+	resp, err := utilities.Docker.ContainerCreate(context.TODO(), containerConfig, hostConfig, &network.NetworkingConfig{}, &v1.Platform{}, name)
 	if err != nil {
 		return c.Send(utilities.MsgJson(err.Error()))
 	}
@@ -146,7 +162,7 @@ func insertContainer(c *fiber.Ctx) error {
 	}
 	err = utilities.Docker.NetworkConnect(context.Background(), net.ID, resp.ID, networkConfig)
 	if err != nil {
-		panic(err)
+		return c.Send(utilities.MsgJson(err.Error()))
 	}
 	// Start the container
 	if err := utilities.Docker.ContainerStart(context.TODO(), resp.ID, types.ContainerStartOptions{}); err != nil {
