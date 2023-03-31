@@ -6,6 +6,7 @@ import (
 	"app/handlers/containerHandler"
 	"app/handlers/dashboardHandler"
 	"app/handlers/imageHandler"
+	tokenhandler "app/handlers/tokenHandler"
 	"app/handlers/userHandler"
 	"app/middlewares/auth"
 	"app/utilities"
@@ -34,6 +35,8 @@ func UseRoute(app *fiber.App) {
 	adminhandler.Register(admin_handler)
 	batch_handler := app.Group("/api/batch")
 	batchhandler.Register(batch_handler)
+	token_handler := app.Group("/api/token")
+	tokenhandler.Register(token_handler)
 	api.Get("/test", auth.Auth, func(c *fiber.Ctx) error { return c.SendString("hello") })
 	api.Get("/testadmin", auth.AdminAuth, func(c *fiber.Ctx) error { return c.SendString("hello") })
 	api.Get("/teststudent", auth.Auth, func(c *fiber.Ctx) error { return c.SendString("hello") })

@@ -216,6 +216,42 @@ func getContainerPass(c *fiber.Ctx) error {
 	}
 	return c.Send(jsondata)
 }
+
+func userInfo(c *fiber.Ctx) error {
+	var req map[string]interface{}
+	err := json.Unmarshal(c.Body(), &req)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(req["_id"])
+	userId, err := primitive.ObjectIDFromHex(req["userid"].(string))
+	coll := database.Instance.Db.Collection("users")
+	matchStage := bson.D{
+		{"$match", bson.D{{"_id", userId}}}}
+	projectStage := bson.D{{
+		"$project", bson.D{
+			{"name", 1},
+			{"data", 1},
+			{"email", 1},
+			{"accound_status", bson.D{{"$not", "$account_deactivated"}}},
+		},
+	}}
+	cursor, err := coll.Aggregate(context.TODO(), mongo.Pipeline{matchStage, projectStage})
+	if err != nil {
+		fmt.Println(err)
+		return c.Send(utilities.MsgJson(utilities.Failure))
+	}
+	var data []bson.M
+	if err = cursor.All(context.TODO(), &data); err != nil {
+		fmt.Println(err)
+		return c.Send(utilities.MsgJson(utilities.Failure))
+	}
+	jsondata, err := json.Marshal(data[0])
+	if data == nil {
+		return c.Send(utilities.MsgJson(utilities.NoData))
+	}
+	return c.Send(jsondata)
+}
 func Register(_route fiber.Router) {
 	_route.Post("/signup", signup)
 	_route.Post("/login", signin)
@@ -223,4 +259,5 @@ func Register(_route fiber.Router) {
 	_route.Post("/activation", updateAcc)
 	_route.Post("/containerlist", getUserContainers)
 	_route.Post("/containerpass", getContainerPass)
+	_route.Post("/getinfo", userInfo)
 }
