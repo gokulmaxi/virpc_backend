@@ -69,6 +69,9 @@ func insertContainer(c *fiber.Ctx) error {
 	if err != nil {
 		panic(err)
 	}
+	containerData.ContainerPassword = req["containerpassword"].(string)
+	containerData.AdminId, err = primitive.ObjectIDFromHex(req["adminId"].(string))
+	collcontainer := database.Instance.Db.Collection("containers")
 	//create new user if not exist
 	userReq := req["userdetails"].(map[string]interface{})
 	filter := bson.D{{"email", userReq["email"].(string)}}
@@ -133,7 +136,7 @@ func insertContainer(c *fiber.Ctx) error {
 	if err != nil {
 		panic(err)
 	}
-	containerConfig := &container.Config{Image: imageResult.ImagePull, Env: []string{"VNC_PW=asdasd"}, ExposedPorts: nat.PortSet{
+	containerConfig := &container.Config{Image: imageResult.ImagePull, Env: []string{"VNC_PW=" + containerData.ContainerPassword}, ExposedPorts: nat.PortSet{
 		"6901/tcp": struct{}{},
 	}}
 	seed := time.Now().UTC().UnixNano()
@@ -171,9 +174,6 @@ func insertContainer(c *fiber.Ctx) error {
 	containerData.ContainerID = resp.ID
 	containerData.ContainerName = strings.Replace(name, "/", "", -1)
 	containerData.Status = containerModel.Running
-	containerData.ContainerPassword = req["containerpassword"].(string)
-	containerData.AdminId, err = primitive.ObjectIDFromHex(req["adminId"].(string))
-	collcontainer := database.Instance.Db.Collection("containers")
 	dbContainerData, err := collcontainer.InsertOne(context.TODO(), containerData)
 	if err != nil {
 		return c.Send(utilities.MsgJson(utilities.Failure))
