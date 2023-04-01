@@ -30,6 +30,7 @@ import (
 
 func startContainer(c *fiber.Ctx) error {
 	var req map[string]interface{}
+	var containerData containerModel.ContainerRequestModel
 	err := json.Unmarshal(c.Body(), &req)
 	if err != nil {
 		panic(err)
@@ -38,6 +39,16 @@ func startContainer(c *fiber.Ctx) error {
 	filter := bson.D{{"_id", id}}
 	update := bson.D{{"$set", bson.D{{"status", containerModel.Running}}}}
 	coll := database.Instance.Db.Collection("containers")
+	err = coll.FindOne(context.TODO(), filter).Decode(&containerData)
+	if err != nil {
+		return c.Send(utilities.MsgJson(err.Error()))
+	}
+	if containerData.Status == containerModel.Running {
+		return c.Send(utilities.MsgJson("Container is already running"))
+	}
+	if err := utilities.Docker.ContainerStart(context.TODO(), containerData.ContainerID, types.ContainerStartOptions{}); err != nil {
+		return c.Send(utilities.MsgJson(err.Error()))
+	}
 	_, err = coll.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		panic(err)
@@ -46,6 +57,8 @@ func startContainer(c *fiber.Ctx) error {
 }
 func stopContainer(c *fiber.Ctx) error {
 	var req map[string]interface{}
+	var containerData containerModel.ContainerRequestModel
+	timeout := time.Duration(10)
 	err := json.Unmarshal(c.Body(), &req)
 	if err != nil {
 		panic(err)
@@ -54,6 +67,16 @@ func stopContainer(c *fiber.Ctx) error {
 	filter := bson.D{{"_id", id}}
 	update := bson.D{{"$set", bson.D{{"status", containerModel.Stopped}}}}
 	coll := database.Instance.Db.Collection("containers")
+	err = coll.FindOne(context.TODO(), filter).Decode(&containerData)
+	if err != nil {
+		return c.Send(utilities.MsgJson(err.Error()))
+	}
+	if containerData.Status == containerModel.Stopped {
+		return c.Send(utilities.MsgJson("Container is already stopped"))
+	}
+	if err := utilities.Docker.ContainerStop(context.TODO(), containerData.ContainerID, &timeout); err != nil {
+		return c.Send(utilities.MsgJson(err.Error()))
+	}
 	_, err = coll.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		panic(err)
@@ -297,8 +320,22 @@ func listImage(c *fiber.Ctx) error {
 }
 func deleteContainer(c *fiber.Ctx) error {
 	id, err := primitive.ObjectIDFromHex(c.Params("id"))
+	var containerData containerModel.ContainerRequestModel
+	timeout := time.Duration(10)
 	filter := bson.D{{"_id", id}}
 	coll := database.Instance.Db.Collection("containers")
+	err = coll.FindOne(context.TODO(), filter).Decode(&containerData)
+	if err != nil {
+		return c.Send(utilities.MsgJson(err.Error()))
+	}
+	if containerData.Status == containerModel.Running {
+		if err := utilities.Docker.ContainerStop(context.TODO(), containerData.ContainerID, &timeout); err != nil {
+			return c.Send(utilities.MsgJson(err.Error()))
+		}
+	}
+	if err := utilities.Docker.ContainerRemove(context.TODO(), containerData.ContainerID, types.ContainerRemoveOptions{}); err != nil {
+		return c.Send(utilities.MsgJson(err.Error()))
+	}
 	_, err = coll.DeleteOne(context.TODO(), filter)
 	if err != nil {
 		return c.Send(utilities.MsgJson(utilities.Failure))
