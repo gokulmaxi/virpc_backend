@@ -134,7 +134,7 @@ func insertContainer(c *fiber.Ctx) error {
 	// REVIEW will network id change every time if not get only once and use
 	net, err := utilities.Docker.NetworkInspect(context.Background(), "vir-pc_backend", types.NetworkInspectOptions{})
 	if err != nil {
-		panic(err)
+		return c.Send(utilities.MsgJson(err.Error()))
 	}
 	containerConfig := &container.Config{Image: imageResult.ImagePull, Env: []string{"VNC_PW=" + containerData.ContainerPassword}, ExposedPorts: nat.PortSet{
 		"6901/tcp": struct{}{},
@@ -151,6 +151,9 @@ func insertContainer(c *fiber.Ctx) error {
 					HostPort: randomPort,
 				},
 			},
+		},
+		RestartPolicy: container.RestartPolicy{
+			Name: "unless-stopped",
 		},
 	}
 	name := nameGenerator.Generate()
@@ -169,7 +172,7 @@ func insertContainer(c *fiber.Ctx) error {
 	}
 	// Start the container
 	if err := utilities.Docker.ContainerStart(context.TODO(), resp.ID, types.ContainerStartOptions{}); err != nil {
-		panic(err)
+		return c.Send(utilities.MsgJson(err.Error()))
 	}
 	containerData.ContainerID = resp.ID
 	containerData.ContainerName = strings.Replace(name, "/", "", -1)

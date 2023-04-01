@@ -7,6 +7,6 @@ type TokenModel struct {
 	Description string
 	CreateDate  string
 	Status      string
-	category    string
+	Category    string
 	UserId      primitive.ObjectID
 }
