@@ -199,7 +199,9 @@ func getContainerPass(c *fiber.Ctx) error {
 	projectStage := bson.D{{
 		"$project", bson.D{
 			{"containerpassword", 1},
+			// TODO depreceate since proxy is working
 			{"containerport", 1},
+			{"containername", 1},
 		},
 	}}
 	cursor, err := coll.Aggregate(context.TODO(), mongo.Pipeline{matchStage, projectStage})
